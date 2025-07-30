@@ -1,0 +1,780 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #aec6cf; /* Light blue background as in image */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0; /* নিশ্চিত করুন বডিতে কোনো ডিফল্ট মার্জিন নেই */
+    color: #333;
+    overflow-x: hidden; /* অনুভূমিক স্ক্রলিং প্রতিরোধ করতে */
+}
+.quiz-container {
+    background-color: #f1f5f7; /* Light blue background as in image */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 0 5px #f7f8f8; /* Blue dotted border effect */
+    border-top: 5px dotted #f8f9f8;
+    border-bottom: 5px dotted #f4f6f7;
+    width: 95%;
+    max-width: 800px; /* কুইজ কন্টেইনারের সর্বোচ্চ প্রস্থ বাড়ানো হয়েছে */
+    text-align: center;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* সকল স্ক্রিন প্রাথমিকভাবে লুকানো থাকবে */
+.name-input-screen, .start-screen, .quiz-screen, .result-screen {
+    display: none;
+    background-color: #f2f2f3; /* Keep background consistent */
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* শুধুমাত্র active ক্লাস থাকা স্ক্রিন দৃশ্যমান হবে */
+.name-input-screen.active, .start-screen.active, .quiz-screen.active, .result-screen.active {
+    display: block;
+}
+
+/* Start Screen Styles */
+.start-screen h1 {
+    color: #7259fa; /* Vibrant red for "সাধারণ জ্ঞান কুইজ" text */
+    margin-bottom: 30px;
+    font-size: 2.8em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.start-screen .info-item {
+    margin-bottom: 15px;
+    font-size: 1.3em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    color: #122022; /* Default color for info text */
+}
+.start-screen .info-item span {
+    font-weight: bold;
+    color: #351b2e; /* Bright blue for dynamic info (e.g., numbers) */
+}
+.start-screen input[type="number"] {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    width: 80px; /* ইনপুট বক্সের প্রস্থ */
+    text-align: center;
+    margin-left: 10px;
+}
+.start-screen .button {
+    background-color: #37e74f; /* Purple */
+}
+.start-screen .button:hover {
+    background-color: #5beb08; /* Darker purple */
+}
+
+/* Common Header Styles for Quiz Screen */
+h2 {
+    color: #007bff;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+.info-item {
+    margin-bottom: 12px;
+    font-size: 1.2em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    color: #555;
+}
+.info-item span {
+    font-weight: bold;
+    color: #0056b3;
+}
+.button {
+    background-color: #007bff;
+    color: white;
+    padding: 16px 35px; /* প্যাডিং বাড়ানো হয়েছে */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.25em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    margin-top: 25px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+.button:hover {
+    background-color: #00b351;
+    transform: translateY(-2px);
+}
+.button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Top Bar - Score & Timer */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* ছোট স্ক্রিনের জন্য র্যাপ করার অনুমতি */
+}
+
+/* গ্লোবাল টাইমার স্টাইল */
+.global-timer-display {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+    flex-grow: 1; /* পর্যাপ্ত স্থান দখল করবে */
+    text-align: left;
+    min-width: 120px; /* মোবাইল ভিউ এর জন্য ন্যূনতম প্রস্থ */
+}
+
+/* প্রশ্ন টাইমার কন্টেইনার (আয়তাকার) */
+.question-timer-container {
+    flex-grow: 2; /* গ্লোবাল টাইমার এর চেয়ে বেশি স্থান নেবে */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px; /* উচ্চতা কমিয়ে আয়তাকার করা হয়েছে */
+    background-color: #d3d3d3; /* ট্র্যাক কালার */
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    margin: 0 15px; /* গ্লোবাল টাইমার এবং স্কোর থেকে দূরত্ব */
+    min-width: 150px; /* মোবাইল ভিউ এর জন্য ন্যূনতম প্রস্থ */
+}
+
+.question-timer-rect {
+    height: 100%;
+    width: 100%; /* শুরুতে 100% পূর্ণ থাকবে */
+    background-color: #28a745; /* সবুজ রঙ */
+    transition: none; /* কোনো এনিমেশন থাকবে না */
+    border-radius: 5px;
+}
+
+.question-timer-text {
+    position: absolute;
+    font-size: 1em; /* টেক্সট ছোট হবে বা খালি থাকবে */
+    font-weight: bold;
+    color: #333;
+    z-index: 1;
+}
+
+.score-display {
+    font-size: 1.8em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    font-weight: bold;
+    color: #333;
+    flex-grow: 1; /* পর্যাপ্ত স্থান দখল করবে */
+    text-align: right;
+    min-width: 100px; /* মোবাইল ভিউ এর জন্য ন্যূনতম প্রস্থ */
+}
+
+/* Question Index Display (1 / 37) */
+.question-index-display {
+    background-color: #ffeb3b;
+    color: #d35400;
+    font-weight: bold;
+    padding: 10px 20px; /* প্যাডিং বাড়ানো হয়েছে */
+    border-radius: 20px;
+    font-size: 1.3em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    display: inline-block;
+    margin-top: -30px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 5;
+}
+
+/* Question Text Box */
+.question-text-box {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 25px; /* প্যাডিং বাড়ানো হয়েছে */
+    margin: 0 auto 30px auto;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    min-height: 140px; /* ন্যূনতম উচ্চতা বাড়ানো হয়েছে */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em; /* ফন্ট সাইজ আরও বাড়ানো হয়েছে */
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    line-height: 1.5; /* লাইন উচ্চতা বাড়ানো হয়েছে */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Options */
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* অপশনগুলির মধ্যে ফাঁকা স্থান বাড়ানো হয়েছে */
+    margin-top: 25px;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+.option-button { /* ক্লাস 'option' থেকে 'option-button' এ পরিবর্তন করা হয়েছে */
+    background-color: #d4e9f7;
+    color: rgb(22, 5, 5);
+    padding: 15px 20px; /* প্যাডিং বাড়ানো হয়েছে */
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.1s ease, border 0.2s ease;
+    font-size: 1.15em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    line-height: 1.4; /* লাইন উচ্চতা বাড়ানো হয়েছে */
+    width: 100%;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.option-button:hover {
+    background-color: #6495ed;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+.option-button.selected {
+    background-color: #4682b4;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.option-button.correct {
+    background-color: #28a745;
+    border: 2px solid #fff;
+    color: white;
+}
+.option-button.wrong {
+    background-color: #dc3545;
+    border: 2px solid #fff;
+    color: white;
+}
+
+/* Controls - Adjusted for below options */
+.controls {
+    margin-top: 25px; /* মার্জিন বাড়ানো হয়েছে */
+    display: flex;
+    justify-content: center;
+    gap: 25px; /* ফাঁকা স্থান বাড়ানো হয়েছে */
+}
+.navigation-button {
+    flex: none;
+    min-width: 140px; /* ন্যূনতম প্রস্থ বাড়ানো হয়েছে */
+    max-width: 200px; /* সর্বোচ্চ প্রস্থ বাড়ানো হয়েছে */
+    padding: 14px 25px; /* প্যাডিং বাড়ানো হয়েছে */
+    font-size: 1.15em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.25);
+}
+.skip-button {
+    background-color: #ffc107;
+    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.3);
+}
+.skip-button:hover {
+    background-color: #e0a800;
+}
+.submit-button {
+    background-color: #28a745;
+    box-shadow: 0 3px 8px rgba(40, 167, 69, 0.3);
+}
+.submit-button:hover {
+    background-color: #218838;
+}
+
+/* Feedback Message - Still present but text is empty */
+.feedback-message {
+    margin-top: 15px; /* মার্জিন বাড়ানো হয়েছে */
+    font-weight: bold;
+    font-size: 1.25em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    min-height: 30px; /* ন্যূনতম উচ্চতা বাড়ানো হয়েছে */
+    color: transparent;
+}
+
+/* Result Screen Styles */
+.result-screen h2 {
+    color: #28a745;
+    margin-bottom: 30px;
+    font-size: 2.8em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.result-screen .result-summary { /* New style for the summary box */
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    width: 100%; /* মোবাইলে আরও চওড়া করার জন্য যোগ করা হয়েছে */
+    box-sizing: border-box; /* padding এবং border প্রস্থের মধ্যে অন্তর্ভুক্ত করতে */
+}
+.result-screen .result-summary p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+.result-screen .result-summary p span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.score-overall { /* Specific style for "Score: 0.00" */
+    font-size: 1.6em !important;
+    font-weight: bold;
+    color: #000 !important;
+    margin-bottom: 20px !important;
+}
+
+.your-percentage-text { /* Only this remains from pass/percentage */
+    font-size: 1.2em !important;
+    font-weight: bold;
+    color: #555 !important;
+    margin-top: 15px;
+}
+.your-percentage-text span {
+    color: #d35400 !important; /* Orange color for percentage */
+}
+
+.percentage-bar { /* Style for the container of the bar */
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    height: 15px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.percentage-bar-fill { /* The actual fill of the bar */
+    height: 100%;
+    width: 0%; /* Initial width, will be set by JS */
+    background-color: #4CAF50; /* Green by default */
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
+}
+
+.result-actions {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.show-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+.show-button:hover {
+    background-color: #0056b3;
+}
+
+/* Detailed Answers Section */
+.detailed-answers-container {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    text-align: left; /* Align text to left for readability */
+    width: 100%; /* মোবাইলে আরও চওড়া করার জন্য যোগ করা হয়েছে */
+    box-sizing: border-box;
+}
+
+.detailed-answers-container h2 {
+    color: #007bff;
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.detailed-questions-list {
+    max-height: 400px; /* Limit height for scrolling */
+    overflow-y: auto;
+    padding-right: 10px; /* For scrollbar */
+    width: 100%; /* নিশ্চিত করুন এটি 100% প্রস্থ নেবে */
+    box-sizing: border-box;
+}
+
+.detailed-questions-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Style for each detailed question item */
+.detailed-question-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    font-size: 1em;
+    line-height: 1.6;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    width: 100%; /* নিশ্চিত করুন এটি 100% প্রস্থ নেবে */
+    box-sizing: border-box;
+}
+
+.question-header {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 10px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.question-number {
+    font-weight: bold;
+    color: #007bff;
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.question-text {
+    font-weight: bold;
+    color: #333;
+    flex-grow: 1; /* Allows text to take available space */
+    font-size: 1.1em;
+}
+
+.status-indicator {
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-left: 10px;
+    white-space: nowrap; /* Prevents status from breaking */
+    font-size: 0.9em;
+}
+
+.status-indicator.correct-status {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Darker green */
+}
+
+.status-indicator.wrong-status {
+    background-color: #f8d7da; /* Light red */
+    color: #721c24; /* Darker red */
+}
+
+.status-indicator.skipped-status {
+    background-color: #fff3cd; /* Light yellow */
+    color: #856404; /* Darker yellow */
+}
+
+.detailed-options {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
+}
+
+.detailed-options li {
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    background-color: #e9ecef; /* Default option background */
+    color: #333;
+    font-size: 0.95em;
+    border: 1px solid #dee2e6;
+    width: 100%; /* নিশ্চিত করুন এটি 100% প্রস্থ নেবে */
+    box-sizing: border-box;
+}
+
+.detailed-options li.selected-correct {
+    background-color: #28a745; /* Green for user's correct answer */
+    color: white;
+    font-weight: bold;
+    border-color: #28a745;
+}
+
+.detailed-options li.selected-wrong {
+    background-color: #dc3545; /* Red for user's wrong answer */
+    color: white;
+    font-weight: bold;
+    border-color: #dc3545;
+}
+
+.detailed-options li.correct-answer-highlight {
+    background-color: #28a745; /* Green to highlight correct answer */
+    color: white;
+    font-weight: bold;
+    border-color: #28a745;
+}
+
+/* Ranking Section */
+.ranking-section {
+    margin-top: 50px; /* মার্জিন বাড়ানো হয়েছে */
+    background-color: #e6f2ff;
+    padding: 25px; /* প্যাডিং বাড়ানো হয়েছে */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%; /* মোবাইলে আরও চওড়া করার জন্য যোগ করা হয়েছে */
+    box-sizing: border-box;
+}
+
+.ranking-section h2 {
+    color: #007bff;
+    margin-bottom: 25px; /* মার্জিন বাড়ানো হয়েছে */
+    font-size: 2.2em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    font-weight: 700;
+}
+
+#rankList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+#rankList li {
+    background-color: #f0f8ff;
+    padding: 15px 20px; /* প্যাডিং বাড়ানো হয়েছে */
+    margin-bottom: 10px; /* মার্জিন বাড়ানো হয়েছে */
+    border-radius: 8px;
+    border: 1px solid #cceeff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2em; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+#rankList li:nth-child(odd) {
+    background-color: #e0f2fe;
+}
+
+#rankList li:first-child {
+    background-color: #fffacd;
+    border-color: #ffd700;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Optional: Add hover effect for list items */
+#rankList li:hover {
+    background-color: #cde4f7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) { /* নতুন ব্রেকপয়েন্ট যোগ করা হয়েছে */
+    .quiz-container {
+        padding: 0; /* মোবাইলে কোনো প্যাডিং থাকবে না */
+        border-radius: 0; /* বর্ডার রেডিয়াস সরিয়ে দেওয়া হয়েছে */
+        box-shadow: none; /* শ্যাডো সরিয়ে দেওয়া হয়েছে */
+        border: none; /* বর্ডার সরিয়ে দেওয়া হয়েছে */
+        width: 100%; /* সম্পূর্ণ প্রস্থ নেবে */
+        max-width: 100%; /* সর্বোচ্চ প্রস্থও সম্পূর্ণ */
+    }
+    .start-screen h1, .result-screen h2 {
+        font-size: 2.2em;
+    }
+    .question-text-box {
+        font-size: 1.6em;
+        min-height: 120px;
+    }
+    .option-button { /* ক্লাস ঠিক করা হয়েছে */
+        font-size: 1.1em;
+        padding: 12px 15px;
+    }
+    .top-bar {
+        flex-direction: column; /* ছোট স্ক্রিনে উল্লম্বভাবে স্ট্যাক করুন */
+        align-items: center;
+        gap: 10px;
+    }
+    .global-timer-display,
+    .question-timer-container,
+    .score-display {
+        width: 100%; /* পূর্ণ প্রস্থ নেবে */
+        text-align: center; /* টেক্সট মাঝখানে থাকবে */
+        margin: 5px 0; /* উল্লম্ব মার্জিন */
+    }
+    .question-timer-container {
+        margin: 10px 0; /* গ্লোবাল এবং স্কোর থেকে দূরত্ব বাড়ান */
+        min-width: unset; /* ন্যূনতম প্রস্থ সরান */
+    }
+    .question-timer-circle { /* এই ক্লাসটি আর ব্যবহৃত হচ্ছে না, কিন্তু যদি থাকে তাহলে সরান */
+        display: none;
+    }
+    .question-timer-text { /* এই টেক্সট এখন আয়তাকার বারের মধ্যে থাকবে */
+        font-size: 1em; /* ছোট রাখুন */
+    }
+    .question-index-display {
+        font-size: 1em;
+        padding: 6px 12px;
+        margin-top: -20px;
+        margin-bottom: 15px;
+    }
+    .result-actions {
+        flex-direction: column; /* Stack buttons vertically on smaller screens */
+        gap: 8px;
+    }
+    .show-button {
+        width: 100%; /* Make buttons full width */
+        padding: 12px;
+        font-size: 1em;
+    }
+    .question-header {
+        flex-direction: column; /* Stack question number, text, and status vertically */
+        align-items: flex-start;
+    }
+    .status-indicator {
+        margin-left: 0;
+        margin-top: 5px;
+    }
+    /* রেজাল্ট সেকশনের অভ্যন্তরীণ ডিভগুলো চওড়া করতে */
+    .result-screen .result-summary,
+    .detailed-answers-container,
+    .ranking-section {
+        width: 100%; /* তাদের প্যারেন্টের 100% প্রস্থ নিতে দিন */
+        box-sizing: border-box; /* নিশ্চিত করুন প্যাডিং এবং বর্ডার প্রস্থের মধ্যে অন্তর্ভুক্ত হয় */
+        border-radius: 0; /* বর্ডার রেডিয়াস সরিয়ে দিন */
+        box-shadow: none; /* শ্যাডো সরিয়ে দিন */
+        margin-bottom: 0; /* মার্জিন সরিয়ে দিন */
+        padding: 15px; /* ছোট স্ক্রিনের জন্য প্যাডিং কিছুটা কমানো যেতে পারে */
+    }
+    /* রেজাল্ট স্ক্রিনের নিজস্ব প্যাডিং */
+    .result-screen {
+        padding: 0; /* রেজাল্ট স্ক্রিনের কোনো প্যাডিং থাকবে না */
+    }
+
+    /* ডিটেইলড অ্যানসার সেকশনের ভিতরের এলিমেন্টগুলির জন্য */
+    .detailed-questions-list {
+        padding-right: 0; /* স্ক্রলবারের জন্য অতিরিক্ত প্যাডিং সরিয়ে দেওয়া হয়েছে */
+    }
+    .detailed-question-item {
+        padding: 10px; /* প্যাডিং কমানো হয়েছে */
+        margin-bottom: 10px; /* মার্জিন কমানো হয়েছে */
+        border-radius: 0; /* বর্ডার রেডিয়াস সরিয়ে দেওয়া হয়েছে */
+        box-shadow: none; /* শ্যাডো সরিয়ে দেওয়া হয়েছে */
+        border-left: none; /* বাম বর্ডার সরিয়ে দেওয়া হয়েছে */
+        border-right: none; /* ডান বর্ডার সরিয়ে দেওয়া হয়েছে */
+    }
+    .detailed-options li {
+        padding: 6px 10px; /* অপশন লিস্ট আইটেমের প্যাডিং কমানো হয়েছে */
+        margin-bottom: 3px; /* মার্জিন কমানো হয়েছে */
+        border-radius: 0; /* বর্ডার রেডিয়াস সরিয়ে দেওয়া হয়েছে */
+        border-left: none; /* বাম বর্ডার সরিয়ে দেওয়া হয়েছে */
+        border-right: none; /* ডান বর্ডার সরিয়ে দেওয়া হয়েছে */
+    }
+    .question-number, .question-text {
+        font-size: 1em; /* ফন্ট সাইজ কমানো হয়েছে */
+    }
+    .status-indicator {
+        font-size: 0.8em; /* ফন্ট সাইজ কমানো হয়েছে */
+        padding: 2px 6px;
+    }
+}
+
+@media (max-width: 600px) {
+    .quiz-container {
+        padding: 0;
+    }
+    .top-bar {
+        flex-direction: column;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    .global-timer-display,
+    .score-display,
+    .question-timer-container {
+        width: 90%; /* মোবাইলে আরও সামঞ্জস্যপূর্ণ প্রস্থ */
+    }
+    .question-timer-text {
+        font-size: 0.9em;
+    }
+    .question-index-display {
+        font-size: 1em;
+        padding: 6px 12px;
+        margin-top: -20px;
+        margin-bottom: 15px;
+    }
+    .question-text-box { /* Renamed */
+        padding: 15px;
+        min-height: 100px;
+        font-size: 1.3em;
+    }
+    .options-container {
+        gap: 10px;
+    }
+    .option-button { /* ক্লাস ঠিক করা হয়েছে */
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+    .controls {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .navigation-button {
+        width: 80%;
+        max-width: 250px;
+        font-size: 1.05em;
+    }
+    .start-screen h1, .result-screen h2 {
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+    .result-screen .result-summary,
+    .detailed-answers-container,
+    .ranking-section {
+        padding: 10px; /* আরও ছোট স্ক্রিনের জন্য প্যাডিং কমানো হয়েছে */
+    }
+    /* ডিটেইলড অ্যানসার সেকশনের ভিতরের এলিমেন্টগুলির জন্য */
+    .detailed-question-item {
+        padding: 8px; /* আরও কমানো হয়েছে */
+        margin-bottom: 8px; /* আরও কমানো হয়েছে */
+    }
+    .detailed-options li {
+        padding: 5px 8px; /* আরও কমানো হয়েছে */
+        margin-bottom: 2px; /* আরও কমানো হয়েছে */
+    }
+}
+
+@media (max-width: 400px) {
+    .global-timer-display, .score-display {
+        font-size: 1.4em;
+    }
+    .question-timer-container {
+        height: 25px; /* আরও ছোট করুন */
+    }
+    .question-timer-text {
+        font-size: 0.8em;
+    }
+    .question-index-display {
+        font-size: 0.9em;
+        padding: 5px 10px;
+    }
+    .question-text-box { /* Renamed */
+        padding: 10px;
+        min-height: 80px;
+        font-size: 1.1em;
+    }
+    .options-container {
+        gap: 8px;
+    }
+    .option-button { /* ক্লাস ঠিক করা হয়েছে */
+        padding: 8px 12px;
+        font-size: 0.85em;
+    }
+    /* ডিটেইলড অ্যানসার সেকশনের ভিতরের এলিমেন্টগুলির জন্য */
+    .detailed-question-item {
+        padding: 5px; /* আরও কমানো হয়েছে */
+        margin-bottom: 5px; /* আরও কমানো হয়েছে */
+    }
+    .detailed-options li {
+        padding: 4px 6px; /* আরও কমানো হয়েছে */
+        font-size: 0.8em; /* ফন্ট সাইজ কমানো হয়েছে */
+    }
+}
