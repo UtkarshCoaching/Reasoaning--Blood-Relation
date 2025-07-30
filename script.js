@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Original questions array
     const originalQuestions = [
         
-  [
   {
     "question": "ছবিতে এক ব্যক্তিকে দেখিয়ে রমেশ সীমাকে বলল, \"তাঁর মা হল তোমার বাবার একমাত্র কন্যা।\" সীমা ব্যক্তিটির কে হয়?",
     "options": ["বোন", "কন্যা", "স্ত্রী", "মা"],
@@ -157,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     "userAnswer": null,
     "status": null
   }
-]
     ];
 
     let questions = []; // This will hold the shuffled questions
